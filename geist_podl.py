@@ -7,23 +7,20 @@ from time import sleep
 from typing import cast
 from web3.providers import JSONBaseProvider
 from web3.types import RPCResponse
-# import pycurl
-# import certifi
-# from io import BytesIO
 import ujson
 
 
 
 
 
-# # Creating a local file for logging
-# logging.basicConfig(filename="C:\\Users\\RetailAdmin\\PycharmProjects\\pythonProject1\\canli_logs.txt", encoding='utf-8', level=logging.INFO)
-# logging.info("Logging Works")
+# Creating a local file for logging
+logging.basicConfig(filename="C:\\Users\\RetailAdmin\\PycharmProjects\\pythonProject1\\canli_logs.txt", encoding='utf-8', level=logging.INFO)
+logging.info("Logging Works")
 
-#w3 = Web3(Web3.HTTPProvider("https://api.avax.network/ext/bc/C/rpc"))
-#w3 = Web3(Web3.HTTPProvider("https://speedy-nodes-nyc.moralis.io/b71d8a61e27edf2d34b86e72/avalanche/mainnet"))
+# Websocket from Moralis faster queries
+
 w3 = Web3(Web3.WebsocketProvider("wss://speedy-nodes-nyc.moralis.io/b71d8a61e27edf2d34b86e72/avalanche/mainnet/ws", websocket_timeout=1))
-# Server Wallet Info
+
 private_key = ""  # Enter your private Key
 wallet_addr = w3.toChecksumAddress("")  # Enter your wallet address
 
@@ -35,9 +32,7 @@ def _fast_decode_rpc_response(raw_response: bytes) -> RPCResponse:
 
 def patch_provider(provider: JSONBaseProvider):
     """Monkey-patch web3.py provider for faster JSON decoding.
-
     Call this on your provider after construction.
-I c
     This greatly improves JSON-RPC API access speeds, when fetching
     multiple and large responses.
     """
@@ -91,47 +86,9 @@ wavax_addr = w3.toChecksumAddress("0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7")
 
 def get_bal():
     return bAVAX_contract.functions.balanceOf(blzz_arb_addr).call()
-#     buffer = BytesIO()
-#
-#     c.setopt(c.URL,
-#              'https://deep-index.moralis.io/api/v2/0x8d426bfe128b171d8fd38a58dfea257f01206f34/erc20?chain=0xa86a')
-#     c.setopt(pycurl.HTTPHEADER, ['Accept: application/json',
-#                                  'X-API-Key: Snf79KoB1gTJb2WexTlojgWQJCA7eflmCNR4jqG2PiATzT7D8c08Wl4I8cAHDSx2'])
-#     c.setopt(c.WRITEDATA, buffer)
-#     c.setopt(c.CAINFO, certifi.where())
-#     c.perform()
-#     # c.close()
-#
-#     return int(ujson.loads(buffer.getvalue())[1]['balance'])
-# # def send_arb(bal, last):
-#     number = w3.eth.block_number
-#     block = requests.get(
-#         f"https://api.snowtrace.io/api?module=account&action=tokentx&address=0x8d426bfe128b171d8fd38a58dfea257f01206f34&startblock={number}&endblock={number}&sort=desc&apikey=C61VPEA18VV5YF2WK13MFYYJ487YBICSP3").json()
-#     print(f"current bal: {bal}, block: {block}")
-#     for i in block['result']:
-#         if i['from'] == '0x0000000000000000000000000000000000000000':
-#             if (int(i['value']) != last):
-#                 last = int(i['value'])
-#                 return (bal + last, last)
-#     return bal, last
-# import time
-# start = time.time()
-# x=0
-# bAVAX_contract.functions.approve(blzz_arb_addr,
-#                                              115792089237316195423570985008687907853269984665640564039457584007913129639935).call()
-
 
 while True:
-    # time.sleep(0.00000000000000000000000000001)
-
-    # blzz_lp_balance_wei = blzz_avax_pool_joe_contract.functions.balanceOf(wallet_addr).call()
-    # blzz_lp_balance = w3.fromWei(blzz_lp_balance_wei, 'ether')
-    #
-    # blzz_arb_bal_wei = blzz_arb_contract.functions.availableAVAX().call()
-    # blzz_arb_bal = w3.fromWei(blzz_arb_bal_wei, 'ether')
-    #
-    # lp_per_AVAX_wei = blzz_arb_contract.functions.lpTokensPerOneAVAX().call()
-    # lp_per_AVAX= w3.fromWei(lp_per_AVAX_wei, 'ether')
+    
     blzz_lp_balance_wei = blzz_avax_pool_joe_contract.functions.balanceOf(wallet_addr).call()
     blzz_lp_balance = w3.fromWei(blzz_lp_balance_wei, 'ether')
     lp_per_AVAX_wei = blzz_arb_contract.functions.lpTokensPerOneAVAX().call()
@@ -153,32 +110,32 @@ while True:
                             'from': wallet_addr,
                             'nonce': w3.eth.get_transaction_count(wallet_addr),
                         })
-            # logging.info("Smart Contract Functions Created for Withdrawal")
-            # logging.info("Attempting to Sign Withdrawal transaction...")
+            logging.info("Smart Contract Functions Created for Withdrawal")
+            logging.info("Attempting to Sign Withdrawal transaction...")
             signed_txn = w3.eth.account.signTransaction(
                 withdraw_tx,
                 private_key=private_key
             )
-            # logging.info("Withdrawal Transaction is Signed")
-            # logging.info("Attempting to Send Withdrawal Transaction...")
+            logging.info("Withdrawal Transaction is Signed")
+            logging.info("Attempting to Send Withdrawal Transaction...")
 
             with_hex_output = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-            # logging.info("Withdrawal Transaction has been sent")
+            logging.info("Withdrawal Transaction has been sent")
 
-            # logging.info("Withdrawal Transaction is waiting to be mined...")
+            logging.info("Withdrawal Transaction is waiting to be mined...")
 
             tx_receipt = w3.eth.wait_for_transaction_receipt(with_hex_output)
-            # logging.info(with_hex_output)
+            logging.info(with_hex_output)
 
-            # logging.info("Arb Transaction has been mined")
+            logging.info("Arb Transaction has been mined")
             print(f"Withdrew {bAVAX_balance} bAVAX")
 
-        # Parameters
+#         Parameters
 
-        # AVAX => TOKEN SWAP - BUY
-        # logging.info("Attempting to calculate buy trade...")
+#         AVAX => TOKEN SWAP - BUY
+#         logging.info("Attempting to calculate buy trade...")
 
-        # Trade Math
+#         Trade Math
 
         sleep(10)
         avax_balance_wei = w3.eth.get_balance(wallet_addr)
@@ -200,10 +157,10 @@ while True:
         amountOutMin = int((trade_amount_wei - trade_amount_wei * slippage) * float(currency_rate))
         params = (amountOutMin, path, to, deadline)
 
-        # logging.info("Calculate buy trade is completed")
+        logging.info("Calculate buy trade is completed")
 
         # Seperate and Create Transaction
-        # logging.info("Attempting to seperate Smart Contract Buy Function and Create Transaction...")
+        logging.info("Attempting to seperate Smart Contract Buy Function and Create Transaction...")
         buy_tx = spooky_router_contract.functions.swapExactAVAXForTokens(amountOutMin, path, to, deadline).buildTransaction({
             'gas': 1000000,
             'gasPrice': w3.eth.gas_price + w3.toWei(30, 'gwei'),
@@ -216,16 +173,16 @@ while True:
             private_key=private_key
         )
 
-        # logging.info("buy Transaction is Signed")
-        # logging.info("Attempting to Send buy Transaction...")
+        logging.info("buy Transaction is Signed")
+        logging.info("Attempting to Send buy Transaction...")
 
         buy_hex_output = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-        # logging.info("buy Transaction has been sent")
+        logging.info("buy Transaction has been sent")
 
-        # logging.info("buy Transaction is waiting to be mined...")
+        logging.info("buy Transaction is waiting to be mined...")
 
         tx_receipt = w3.eth.wait_for_transaction_receipt(buy_hex_output)
-        # logging.info(buy_hex_output)
+        logging.info(buy_hex_output)
         sleep(10)
         blzz_balance_wei = blzz_contract.functions.balanceOf(wallet_addr).call()
         blzz_balance = w3.fromWei(blzz_balance_wei, 'ether')
@@ -249,18 +206,18 @@ while True:
             pool_tx,
             private_key=private_key
         )
-        # logging.info("buy Transaction is Signed")
-        # logging.info("Attempting to Send buy Transaction...")
+        logging.info("buy Transaction is Signed")
+        logging.info("Attempting to Send buy Transaction...")
 
         pool_hex_output = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
 
-        #logging.info("pool Transaction has been sent")
+        logging.info("pool Transaction has been sent")
 
-        #logging.info("pool Transaction is waiting to be mined...")
+        logging.info("pool Transaction is waiting to be mined...")
 
         tx_receipt = w3.eth.wait_for_transaction_receipt(pool_hex_output)
 
-        #logging.info(pool_hex_output)
+        logging.info(pool_hex_output)
         del tx_receipt
         del signed_txn
         del pool_hex_output
@@ -307,38 +264,6 @@ while True:
     )
 
     bal = (bAVAX_contract.functions.balanceOf(blzz_arb_addr).call())
-    print(blzz_avax_pool_joe_contract.all_functions())
-    #bAVAX_contract.functions.transferFrom(blzz_arb_addr, wallet_addr, 1000000000000000000).call()
-    # bAVAX_contract.functions.transferFrom(blzz_arb_addr, wallet_addr, 1000000000000000000).call({
-    #     'gas': 350000,
-    #     'maxFeePerGas': gas + pfof,
-    #     'maxPriorityFeePerGas': pfof,
-    #     'from': wallet_addr,
-    #     'nonce': w3.eth.get_transaction_count(wallet_addr),
-    #     'type': '0x2',
-    # })
-    #bAVAX_contract.functions.transferFrom(blzz_arb_addr, wallet_addr, 200000000000000).call()
-    # while True:
-    #     try:
-    #         print(f"Tried")
-    #         bAVAX_contract.functions.transferFrom(blzz_arb_addr, wallet_addr, 1000000000000000000).call()
-    #     #     x = blzz_arb_contract.functions.buyAVAX(1000000000000000000).call({
-    #     #     'gas': 350000,
-    #     #     'maxFeePerGas': gas + pfof,
-    #     #     'maxPriorityFeePerGas': pfof,
-    #     #     'from': wallet_addr,
-    #     #     'nonce': w3.eth.get_transaction_count(wallet_addr),
-    #     #     'type': '0x2',
-    #     # })
-    #
-    #         arb_hex_output = w3.eth.sendRawTransaction(signed_txn1.rawTransaction)
-    #         print(f"SENT ARB OF {bal}")
-    #         tx_receipt = w3.eth.wait_for_transaction_receipt(arb_hex_output)
-    # #         y=9
-    #     except:
-    #         y = 0
-
-
 
     if (gas < 235000000000) and (blzz_lp_balance_wei > 2*lp_per_AVAX_wei):
 
@@ -358,9 +283,7 @@ while True:
                     bal = int(requests.get((
                                                f"https://api.snowtrace.io/api?module=account&action=tokenbalance&contractaddress={'0xb2ac04b71888e17aa2c5102cf3d0215467d74100'}&address={'0x8d426bfe128b171d8fd38a58dfea257f01206f34'}&tag=latest&apikey='C61VPEA18VV5YF2WK13MFYYJ487YBICSP3'")).json()[
                                   'result'])
-                    #sleep(10)
 
-            #print(f"Public API: {bal / 2000000000000000000}")
     bal = bal//2
     if bal >= 1400000000000000000 and (blzz_lp_balance_wei > (lp_per_AVAX_wei*bal / 1000000000000000000)):
         signed_txn = w3.eth.account.signTransaction(
@@ -418,261 +341,3 @@ while True:
             del blzz_lp_balance_wei
             gc.collect()
             sleep(5)
-
-    # except:
-    #     sleep(1)
-    # if bal < (float(blzz_lp_balance/lp_per_AVAX)*1000000000000000000):
-    #         signed_txn = w3.eth.account.signTransaction(
-    #             blzz_arb_contract.functions.buyAVAX(bal).buildTransaction({
-    #                 'gas': 400000,
-    #                 'maxFeePerGas': gas + 40000000000,
-    #                 'maxPriorityFeePerGas': 40000000000,
-    #                 'from': wallet_addr,
-    #                 'nonce': w3.eth.get_transaction_count(wallet_addr),
-    #                 'type': '0x2',
-    #             }),
-    #             private_key=private_key
-    #         )
-    #         arb_hex_output = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-    #         tx_receipt = w3.eth.wait_for_transaction_receipt(arb_hex_output)
-    # else:
-    #         arb_amt = w3.toWei(blzz_lp_balance/lp_per_AVAX, 'ether')
-    #         signed_txn = w3.eth.account.signTransaction(
-    #             blzz_arb_contract.functions.buyAVAX(arb_amt).buildTransaction({
-    #                 'gas': 400000,
-    #                 'maxFeePerGas': gas + 40000000000,
-    #                 'maxPriorityFeePerGas': 40000000000,
-    #                 'from': wallet_addr,
-    #                 'nonce': w3.eth.get_transaction_count(wallet_addr),
-    #                 'type': '0x2',
-    #             }),
-    #             private_key=private_key
-    #         )
-    #         arb_hex_output = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-    #         tx_receipt = w3.eth.wait_for_transaction_receipt(arb_hex_output)
-        # if blzz_arb_bal < (float(blzz_lp_balance/lp_per_AVAX)):
-        #     arb_tx = blzz_arb_contract.functions.buyAVAX(blzz_arb_bal_wei).buildTransaction({
-        #                 'gas': 4000000,
-        #                 'gasPrice': w3.eth.gas_price + w3.toWei(35, 'gwei'),
-        #                 'from': wallet_addr,
-        #                 'nonce': w3.eth.get_transaction_count(wallet_addr),
-        #
-        #             })
-        #
-        # else:
-        #     arb_amt = w3.toWei(blzz_lp_balance/lp_per_AVAX, 'ether')
-        #     arb_tx = blzz_arb_contract.functions.buyAVAX(arb_amt).buildTransaction({
-        #         'gas': 4000000,
-        #         'gasPrice': w3.eth.gas_price + w3.toWei(35, 'gwei'),
-        #         'from': wallet_addr,
-        #         'nonce': w3.eth.get_transaction_count(wallet_addr),
-        #     })
-        #logging.info("Smart Contract Functions Created for Arb")
-        #logging.info("Attempting to Sign Arb transaction...")
-    # signed_txn = w3.eth.account.signTransaction(
-    #             arb_tx,
-    #             private_key=private_key
-    #         )
-        #logging.info("Arb Transaction is Signed")
-        #logging.info("Attempting to Send arb Transaction...")
-    #
-
-    #     #logging.info(arb_hex_output)
-
-
-        #logging.info("Arb Transaction has been mined")
-
-    #sleep(2)
-
-    # logging.info("")
-    # logging.info("")
-    # logging.info("New Check is starting...")
-    # logging.info("---------- WALLET BALANCES ----------")
-    # logging.info("AVAX: " + str(avax_balance))
-    # logging.info("BLZZ: " + str(blzz_balance))
-    # logging.info("bAVAX: " + str(bAVAX_balance))
-    # logging.info("BLZZ AVAX LP: " + str(blzz_lp_balance))
-    # logging.info("BLZZ Arb Bal: " + str(blzz_arb_bal))
-    # logging.info(" ")
-
-
-    #
-    # if (blzz_lp_balance_wei < min(lp_per_AVAX_wei*bal / 1000000000000000000, 2.5*lp_per_AVAX_wei)) and (w3.fromWei(w3.eth.gas_price, 'ether') < 250):
-    #     avax_balance_wei = w3.eth.get_balance(wallet_addr)
-    #     avax_balance = w3.fromWei(avax_balance_wei, 'ether')
-    #
-    #     blzz_balance_wei = blzz_contract.functions.balanceOf(wallet_addr).call()
-    #     blzz_balance = w3.fromWei(blzz_balance_wei, 'ether')
-    #
-    #     bAVAX_balance_wei = bAVAX_contract.functions.balanceOf(wallet_addr).call()
-    #     bAVAX_balance = w3.fromWei(bAVAX_balance_wei, 'ether')
-    #     if bAVAX_balance > 5:
-    #         withdraw_tx = blzz_weth_contract.functions.withdrawETH(lend_pool_addr, bAVAX_balance_wei, wallet_addr).buildTransaction({
-    #                         'gas': 1600000,
-    #                         'gasPrice': w3.eth.gas_price + w3.toWei(20, 'gwei'),
-    #                         'from': wallet_addr,
-    #                         'nonce': w3.eth.get_transaction_count(wallet_addr),
-    #                     })
-    #         # logging.info("Smart Contract Functions Created for Withdrawal")
-    #         # logging.info("Attempting to Sign Withdrawal transaction...")
-    #         signed_txn = w3.eth.account.signTransaction(
-    #             withdraw_tx,
-    #             private_key=private_key
-    #         )
-    #         # logging.info("Withdrawal Transaction is Signed")
-    #         # logging.info("Attempting to Send Withdrawal Transaction...")
-    #
-    #         with_hex_output = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-    #         # logging.info("Withdrawal Transaction has been sent")
-    #
-    #         # logging.info("Withdrawal Transaction is waiting to be mined...")
-    #
-    #         tx_receipt = w3.eth.wait_for_transaction_receipt(with_hex_output)
-    #         # logging.info(with_hex_output)
-    #
-    #         # logging.info("Arb Transaction has been mined")
-    #         print(f"Withdrew {bAVAX_balance} bAVAX")
-    #
-    #     # Parameters
-    #
-    #     # AVAX => TOKEN SWAP - BUY
-    #     # logging.info("Attempting to calculate buy trade...")
-    #
-    #     # Trade Math
-    #
-    #     sleep(10)
-    #     avax_balance_wei = w3.eth.get_balance(wallet_addr)
-    #     avax_balance = w3.fromWei(avax_balance_wei, 'ether')
-    #     trade_amount = min(float(avax_balance)*0.85, 20)
-    #     trade_start_balance = trade_amount/2
-    #     trade_amount_wei = w3.toWei(trade_start_balance, 'ether')
-    #     slippage = 0.02
-    #
-    #     reserves_wei = blzz_avax_pool_joe_contract.functions.getReserves().call()
-    #     reserveOfToken0 = w3.fromWei(reserves_wei[0], 'ether')
-    #     reserveOfToken1 = w3.fromWei(reserves_wei[1], 'ether')
-    #
-    #     currency_rate = reserveOfToken0 / reserveOfToken1
-    #     # Currency arrangement for amountOutMin
-    #     path = [blzz_avax_pool_joe_contract.functions.token1().call(), blzz_avax_pool_joe_contract.functions.token0().call()]
-    #     to = wallet_addr
-    #     deadline = int(time.time() * 1000 + 1000 * 60 * 10)  # deadline is 10 minutes
-    #     amountOutMin = int((trade_amount_wei - trade_amount_wei * slippage) * float(currency_rate))
-    #     params = (amountOutMin, path, to, deadline)
-    #
-    #     # logging.info("Calculate buy trade is completed")
-    #
-    #     # Seperate and Create Transaction
-    #     # logging.info("Attempting to seperate Smart Contract Buy Function and Create Transaction...")
-    #     buy_tx = spooky_router_contract.functions.swapExactAVAXForTokens(amountOutMin, path, to, deadline).buildTransaction({
-    #         'gas': 1000000,
-    #         'gasPrice': w3.eth.gas_price + w3.toWei(30, 'gwei'),
-    #         'from': wallet_addr,
-    #         'nonce': w3.eth.get_transaction_count(wallet_addr),
-    #         'value': trade_amount_wei
-    #     })
-    #     signed_txn = w3.eth.account.signTransaction(
-    #         buy_tx,
-    #         private_key=private_key
-    #     )
-    #
-    #     # logging.info("buy Transaction is Signed")
-    #     # logging.info("Attempting to Send buy Transaction...")
-    #
-    #     buy_hex_output = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-    #     # logging.info("buy Transaction has been sent")
-    #
-    #     # logging.info("buy Transaction is waiting to be mined...")
-    #
-    #     tx_receipt = w3.eth.wait_for_transaction_receipt(buy_hex_output)
-    #     # logging.info(buy_hex_output)
-    #     sleep(10)
-    #     blzz_balance_wei = blzz_contract.functions.balanceOf(wallet_addr).call()
-    #     blzz_balance = w3.fromWei(blzz_balance_wei, 'ether')
-    #     blzz_balance_wei = w3.toWei(float(blzz_balance)*0.99, 'ether')
-    #     blzz_balance_min = w3.toWei(float(blzz_balance)*0.95, 'ether')
-    #     reserves_wei = blzz_avax_pool_joe_contract.functions.getReserves().call()
-    #     reserveOfToken0 = w3.fromWei(reserves_wei[0], 'ether')
-    #     reserveOfToken1 = w3.fromWei(reserves_wei[1], 'ether')
-    #
-    #     currency_rate = reserveOfToken0 / reserveOfToken1
-    #     avax_balance_min = float(blzz_balance)*0.95/float(currency_rate)
-    #     avax_balance_min_wei = w3.toWei(avax_balance_min, 'ether')
-    #     pool_tx = spooky_router_contract.functions.addLiquidityAVAX(blzz_addr, blzz_balance_wei, blzz_balance_min, avax_balance_min_wei, wallet_addr, deadline).buildTransaction({
-    #         'gas': 1000000,
-    #         'gasPrice': w3.eth.gas_price + w3.toWei(30, 'gwei'),
-    #         'from': wallet_addr,
-    #         'nonce': w3.eth.get_transaction_count(wallet_addr),
-    #         'value': w3.toWei(float(blzz_balance)/float(currency_rate), 'ether')
-    #     })
-    #     signed_txn = w3.eth.account.signTransaction(
-    #         pool_tx,
-    #         private_key=private_key
-    #     )
-    #     # logging.info("buy Transaction is Signed")
-    #     # logging.info("Attempting to Send buy Transaction...")
-    #
-    #     pool_hex_output = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-    #
-    #     #logging.info("pool Transaction has been sent")
-    #
-    #     #logging.info("pool Transaction is waiting to be mined...")
-    #
-    #     tx_receipt = w3.eth.wait_for_transaction_receipt(pool_hex_output)
-    #
-    #     #logging.info(pool_hex_output)
-    #
-    #     print("added liquidity!!")
-    #
-    #     # avax_balance_wei = w3.eth.get_balance(wallet_addr)
-    #     # avax_balance = w3.fromWei(avax_balance_wei, 'ether')
-    #     # if avax_balance > 6:
-    #     #     #logging.info("Attempting to calculate buy trade...")
-    #     #
-    #     #     # Trade Math
-    #     #     trade_start_balance = avax_balance - 3
-    #     #     trade_amount_wei = w3.toWei(trade_start_balance, 'ether')
-    #     #     slippage = 0.02
-    #     #
-    #     #     reserves_wei = dai_avax_pool_joe_contract.functions.getReserves().call()
-    #     #     reserveOfToken0 = w3.fromWei(reserves_wei[0], 'ether')
-    #     #     reserveOfToken1 = w3.fromWei(reserves_wei[1], 'ether')
-    #     #
-    #     #     currency_rate = reserveOfToken0 / reserveOfToken1
-    #     #     currency_rate = float((1 / currency_rate))
-    #     #     # Currency arrangement for amountOutMin
-    #     #     path = [dai_avax_pool_joe_contract.functions.token0().call(),
-    #     #             dai_avax_pool_joe_contract.functions.token1().call()]
-    #     #     to = wallet_addr
-    #     #     deadline = int(time.time() * 1000 + 1000 * 60 * 10)  # deadline is 10 minutes
-    #     #     amountOutMin = int((trade_amount_wei - trade_amount_wei * slippage) * float(currency_rate))
-    #     #     params = (amountOutMin, path, to, deadline)
-    #     #
-    #     #     #logging.info("Calculate buy trade is completed")
-    #     #
-    #     #     # Seperate and Create Transaction
-    #     #     #logging.info("Attempting to seperate Smart Contract Buy Function and Create Transaction...")
-    #     #     buy_tx = joe_router_contract.functions.swapExactAVAXForTokens(amountOutMin, path, to,
-    #     #                                                                   deadline).buildTransaction({
-    #     #         'gas': 1000000,
-    #     #         'gasPrice': w3.eth.gas_price + w3.toWei(30, 'gwei'),
-    #     #         'from': wallet_addr,
-    #     #         'nonce': w3.eth.get_transaction_count(wallet_addr),
-    #     #         'value': trade_amount_wei
-    #     #     })
-    #     #     signed_txn = w3.eth.account.signTransaction(
-    #     #         buy_tx,
-    #     #         private_key=private_key
-    #     #     )
-    #     #     #logging.info("buy Transaction is Signed")
-    #     #    # logging.info("Attempting to Send buy Transaction...")
-    #     #
-    #     #     buy_hex_output = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-    #     #   #  logging.info("buy Transaction has been sent")
-    #     #
-    #     #  #   logging.info("buy Transaction is waiting to be mined...")
-    #     #
-    #     #     tx_receipt = w3.eth.wait_for_transaction_receipt(buy_hex_output)
-    #     #
-    #     #
-    #     #
